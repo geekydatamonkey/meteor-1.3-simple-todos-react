@@ -30,6 +30,7 @@ const App = React.createClass({
     event.preventDefault();
     const newTask = {
       text: this.state.inputText.trim(),
+      isComplete: false,
       createdAt: new Date(),
     };
     Tasks.insert(newTask);
@@ -46,21 +47,28 @@ const App = React.createClass({
     });
   },
 
-  handleTaskDelete(taskId) {
-    Tasks.remove(taskId);
+  handleTaskDelete(task) {
+    Tasks.remove(task._id);
+  },
+
+  handleTaskToggleComplete(task) {
+    Tasks.update(
+      task._id,
+      { $set: { isComplete: !task.isComplete } }
+    );
   },
 
   renderTasks() {
     return this.getTasks()
-      .map((task) => {
-        return (
-          <Task
-            key={task._id}
-            task={task}
-            handleDelete={this.handleTaskDelete}
-          />
-        );
-      });
+      .map(task => (
+        <Task
+          key={task._id}
+          task={task}
+          handleDelete={this.handleTaskDelete}
+          handleToggleComplete={this.handleTaskToggleComplete}
+        />
+      )
+    );
   },
 
   render() {

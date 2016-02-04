@@ -7,8 +7,12 @@ const defaultTasks = [
   { text: 'stick of butter' },
 ];
 
+function initializeTasks(tasks) {
+  tasks.forEach(task => Tasks.insert(task));
+}
+
 Meteor.startup(() => {
-  Tasks.remove({}, () => {
-    defaultTasks.forEach(task => Tasks.insert(task));
-  });
+  if (Tasks.find().count() === 0) {
+    initializeTasks(defaultTasks);
+  }
 });
