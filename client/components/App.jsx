@@ -1,9 +1,11 @@
 import React from 'react';
+import { Meteor } from 'meteor/meteor';
 import { ReactMeteorData } from 'meteor/react-meteor-data';
 import { Tasks } from '../../both/collections';
 import Task from './Task.jsx';
 import NewTaskForm from './NewTaskForm.jsx';
 import HideCompletedCheckbox from './HideCompletedCheckbox.jsx';
+import AccountsUIWrapper from './AccountsUIWrapper.jsx';
 
 const App = React.createClass({
   // This mixin makes the getMeteorData method work
@@ -27,6 +29,7 @@ const App = React.createClass({
     return {
       tasks: Tasks.find(query, { sort: { createdAt: -1 } }).fetch(),
       incompleteCount: Tasks.find({ isComplete: { $ne: true } }).count(),
+      currentUser: Meteor.user(),
     };
   },
 
@@ -39,10 +42,13 @@ const App = React.createClass({
   */
   handleNewTaskSubmit(event) {
     event.preventDefault();
+    console.log(Meteor.user());
     const newTask = {
       text: this.state.inputText.trim(),
       isComplete: false,
       createdAt: new Date(),
+      owner: Meteor.userId(),
+      username: Meteor.user().username,
     };
     Tasks.insert(newTask);
 
@@ -94,6 +100,19 @@ const App = React.createClass({
     );
   },
 
+  renderNewTaskForm() {
+    // show only if logged in
+    if (this.data.currentUser) {
+      return (
+        <NewTaskForm
+          handleSubmit={this.handleNewTaskSubmit}
+          handleChange={this.handleNewTaskChange}
+          text={this.state.inputText}
+        />
+      );
+    }
+  },
+
   render() {
     return (
       <div className="container">
@@ -103,14 +122,11 @@ const App = React.createClass({
             hideCompleted={this.state.hideCompleted}
             handleChange={ this.handleHideCompletedChange }
           />
-          <NewTaskForm
-            handleSubmit={this.handleNewTaskSubmit}
-            handleChange={this.handleNewTaskChange}
-            text={this.state.inputText}
-          />
+          <AccountsUIWrapper />
+          { this.renderNewTaskForm() }
         </header>
         <ul>
-          {this.renderTasks()}
+          { this.renderTasks() }
         </ul>
       </div>
     );
