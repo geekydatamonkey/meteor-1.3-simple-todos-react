@@ -18,15 +18,15 @@ const App = React.createClass({
 
   // Loads items from the Tasks collection and puts them on this.data.tasks
   getMeteorData() {
-    const query = this.state.hideCompleted
-      ? { isComplete: false }
-      : {};
+    let query = {};
+
+    if (this.state.hideCompleted) {
+      query = { isComplete: { $ne: true } };
+    }
 
     return {
-      tasks: Tasks.find(
-        query,
-        { sort: { createdAt: -1 } }
-      ).fetch(),
+      tasks: Tasks.find(query, { sort: { createdAt: -1 } }).fetch(),
+      incompleteCount: Tasks.find({ isComplete: { $ne: true } }).count(),
     };
   },
 
@@ -98,7 +98,7 @@ const App = React.createClass({
     return (
       <div className="container">
         <header>
-          <h1>To Do List</h1>
+          <h1>To Do List ({this.data.incompleteCount} incomplete)</h1>
           <HideCompletedCheckbox
             hideCompleted={this.state.hideCompleted}
             handleChange={ this.handleHideCompletedChange }
