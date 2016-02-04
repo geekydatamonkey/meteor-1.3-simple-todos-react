@@ -3,22 +3,30 @@ import { ReactMeteorData } from 'meteor/react-meteor-data';
 import { Tasks } from '../../both/collections';
 import Task from './Task.jsx';
 import NewTaskForm from './NewTaskForm.jsx';
+import HideCompletedCheckbox from './HideCompletedCheckbox.jsx';
 
 const App = React.createClass({
   // This mixin makes the getMeteorData method work
   mixins: [ReactMeteorData],
 
-  // Loads items from the Tasks collection and puts them on this.data.tasks
-
   getInitialState() {
     return {
       inputText: '',
+      hideCompleted: false,
     };
   },
 
+  // Loads items from the Tasks collection and puts them on this.data.tasks
   getMeteorData() {
+    const query = this.state.hideCompleted
+      ? { isComplete: false }
+      : {};
+
     return {
-      tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
+      tasks: Tasks.find(
+        query,
+        { sort: { createdAt: -1 } }
+      ).fetch(),
     };
   },
 
@@ -26,7 +34,10 @@ const App = React.createClass({
     return this.data.tasks;
   },
 
-  handleSubmit(event) {
+  /**
+  * New Task Handlers
+  */
+  handleNewTaskSubmit(event) {
     event.preventDefault();
     const newTask = {
       text: this.state.inputText.trim(),
@@ -41,12 +52,15 @@ const App = React.createClass({
     });
   },
 
-  handleInputChange(str = '') {
+  handleNewTaskChange(str = '') {
     this.setState({
       inputText: str,
     });
   },
 
+  /**
+  * Task Handlers
+  */
   handleTaskDelete(task) {
     Tasks.remove(task._id);
   },
@@ -56,6 +70,15 @@ const App = React.createClass({
       task._id,
       { $set: { isComplete: !task.isComplete } }
     );
+  },
+
+  /**
+  * Toggle Complete Checkbox Handlers
+  */
+  handleHideCompletedChange() {
+    this.setState({
+      hideCompleted: !this.state.hideCompleted,
+    });
   },
 
   renderTasks() {
@@ -76,9 +99,13 @@ const App = React.createClass({
       <div className="container">
         <header>
           <h1>To Do List</h1>
+          <HideCompletedCheckbox
+            hideCompleted={this.state.hideCompleted}
+            handleChange={ this.handleHideCompletedChange }
+          />
           <NewTaskForm
-            handleSubmit={this.handleSubmit}
-            handleChange={this.handleInputChange}
+            handleSubmit={this.handleNewTaskSubmit}
+            handleChange={this.handleNewTaskChange}
             text={this.state.inputText}
           />
         </header>

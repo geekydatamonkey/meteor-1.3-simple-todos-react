@@ -34,7 +34,7 @@ const Task = React.createClass({
         <input
           type="checkbox"
           checked={ this.props.task.isComplete }
-          onClick={ this.toggleComplete }
+          onChange={ this.toggleComplete }
         />
         <span className="text">{this.props.task.text}</span>
       </li>
